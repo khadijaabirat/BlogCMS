@@ -79,3 +79,79 @@ SELECT MIN(created_at_com) FROM comments;
 
 
 SELECT SUM(view_count) as totalvues FROM post;
+
+
+
+SELECT p.title AS titre_article,
+       u.username AS nom_auteur,
+       p.created_at AS date_publication
+FROM post p
+INNER JOIN users u ON p.user_id = u.user_id;
+
+
+
+SELECT c.name AS categorie,
+       COUNT(p.id_posts) AS nb_articles
+FROM categories c
+LEFT JOIN post p ON c.category_id = p.category_id
+GROUP BY c.category_id, c.name;
+
+
+
+SELECT u.username AS nom_utilisateur,
+       COUNT(DISTINCT p.id_posts) AS nb_articles,
+       COUNT(c.comment_id) AS nb_commentaires
+FROM users u
+LEFT JOIN post p ON u.user_id = p.user_id
+LEFT JOIN comments c ON p.id_posts = c.id_posts
+GROUP BY u.user_id, u.username;
+
+
+
+SELECT p.id_posts,
+       p.title,
+       p.user_id,
+       p.category_id
+FROM post p
+LEFT JOIN categories c ON p.category_id = c.category_id
+WHERE c.category_id IS NULL;
+
+
+CREATE VIEW dashboard_articles AS
+SELECT 
+    p.id_posts,
+    p.title AS titre_article,
+    u.username AS nom_auteur,
+    c.name AS categorie,
+    COUNT(cm.comment_id) AS nb_commentaires,
+    p.updated_at AS date_derniere_modification
+FROM post p
+INNER JOIN users u ON p.user_id = u.user_id
+INNER JOIN categories c ON p.category_id = c.category_id
+LEFT JOIN comments cm ON p.id_posts = cm.id_posts
+WHERE p.status_Post = 'published'
+GROUP BY p.id_posts, p.title, u.username, c.name, p.updated_at;
+
+
+SELECT c.name AS categorie,
+       COUNT(p.id_posts) AS nb_articles
+FROM categories c
+LEFT JOIN post p ON c.category_id = p.category_id
+GROUP BY c.category_id, c.name
+HAVING COUNT(p.id_posts) > 5;
+
+
+SELECT *
+FROM users
+WHERE user_id NOT IN (
+    SELECT DISTINCT user_id
+    FROM post
+);
+
+
+UPDATE post p
+INNER JOIN categories c ON p.category_id = c.category_id
+SET p.status_Post = 'archivé'
+WHERE c.name = 'Obsolète';
+
+
